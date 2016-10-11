@@ -8,19 +8,6 @@ from scipy.io import *
 from scipy.misc import *
 import os
 
-if os.path.isfile('./AVD.npy')==True:
-  if os.path.isfile('./avd.mat')==True:
-    sys.exit()
-  dict1=np.load('AVD.npy')
-  comp_dict=np.zeros([20*11, 35*11, 5])
-  for i in range(20):
-    for j in range(35):
-      comp_dict[i*11:i*11+11, j*11:j*11+11, :]=np.reshape(dict1[:, i*35+j], [11, 11, 5])
-  cd={}
-  cd['dict']=comp_dict
-  savemat('avd.mat', cd)
-  sys.exit()
-
 def create_batch(data, batch_size):
   return data[:, np.floor(np.random.rand(batch_size)*np.size(data, 1)).astype(int)]
 
