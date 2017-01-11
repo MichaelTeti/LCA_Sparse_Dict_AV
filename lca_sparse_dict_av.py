@@ -49,7 +49,7 @@ Dict=Dict+tf.matmul((X-tf.matmul(Dict, a)), tf.transpose(a))
 # mean squared error
 error=tf.reduce_mean(tf.square(tf.sub(X, tf.matmul(Dict, a))))
 
-for i in range(10000): # LCA iterations
+for i in range(300): # LCA iterations
   print('iteration: %d'%(i))
   batch=create_batch(data, batch_sz) # create new batch
   # feed dictionary from last iteration to get new dictionary
