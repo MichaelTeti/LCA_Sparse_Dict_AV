@@ -31,7 +31,7 @@ assert(x.shape[0]==ps**2), 'check data shape before sending to model'
 with tf.Session() as sess:
   for iters in range(LCA_iters):
     print(iters)
-    batch=x[:, np.uint8(np.floor(np.random.rand(batch_sz)*x.shape[1]))]
+    batch=x[:, np.int32(np.floor(np.random.rand(batch_sz)*x.shape[1]))]
     batch=(batch-np.mean(batch, axis=0))/(np.std(batch, axis=0)+1e-6)
     D=tf.matmul(D, tf.diag(1/tf.sqrt(tf.reduce_sum(D**2, 0))))
     a=tf.matmul(tf.transpose(D), batch)
