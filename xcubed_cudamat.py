@@ -15,9 +15,9 @@ import cv2
 
 
 # define useful variables
-iters = 500 # number of training iterations
+iters = 300 # number of training iterations
 batch_sz = 1500  # training batch size
-k = 700
+k = 1000
 patch_sz = 15
 imsz = 100
 
@@ -107,6 +107,11 @@ def X3(y, iters, batch_sz, num_dict_features=None, D=None, white=False):
             batch_sz: number of samples to send to the network at each iteration.
             D: The dictionary to be used in the network.'''
 
+    if white is False:
+        scale_ = 0
+    else:
+        scale_ = 1
+
     cm.cuda_set_device(0)
     cm.cuda_set_device(1)
     cm.init()
@@ -124,9 +129,10 @@ def X3(y, iters, batch_sz, num_dict_features=None, D=None, white=False):
     DS2 = cm.empty([1, num_dict_features])
 
     for i in range(iters):
+
         # choose random examples this iteration
         batch = y[:, np.random.randint(0, y.shape[1], batch_sz)]
-        batch = scale(batch, 1)
+        batch = scale(batch, scale_)
 
         if white:
             batch = whiten(batch)
@@ -150,7 +156,7 @@ def X3(y, iters, batch_sz, num_dict_features=None, D=None, white=False):
 
         # perform cubic activation on the alphas
         cm.pow(a, 3)
-        a.mult(0.08) # learning rate
+        a.mult(0.3) # learning rate
 
         # get the SSE between reconstruction and data batch
         error = batch.subtract(cm.dot(D, a))
@@ -163,10 +169,25 @@ def X3(y, iters, batch_sz, num_dict_features=None, D=None, white=False):
         cv2.imshow('Dictionary', montage(mat2ten(D.asarray())))
         cv2.waitKey(1)
 
+    fig = plt.figure(figsize=(16, 16))
+    a1 = fig.add_subplot(121)
+    a2 = fig.add_subplot(122)
+    a1.imshow(montage(mat2ten(batch.asarray())), cmap='gray')
+    a2.imshow(montage(mat2ten(cm.dot(D, a).asarray())), cmap='gray')
+    plt.show()
+
+
+    cm.pow(a, 2, target=AS)
+    cm.sum(AS, 0, target=AS2)
+    cm.pow(cm.sqrt(AS2.add(1e-6)), -1)
+    a.mult_by_row(AS2)
+
+    plt.plot(np.sort(np.absolute(a.asarray()[:, 0]))[::-1])
+    plt.show()
+
     cm.shutdown()
 
     return D.asarray(), a.asarray(), e
-
 
 
 
@@ -175,5 +196,3 @@ X = np.asarray(f['X'])
 print(X.shape)
 
 Dict, alpha, error = X3(X, iters, batch_sz, k, white=True)
-plot(montage(mat2ten(Dict)))
-#plot2(alpha, error)
