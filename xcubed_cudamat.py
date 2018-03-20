@@ -96,7 +96,7 @@ def whiten(X):
 
 
 
-def X3(y, iters, batch_sz, num_dict_features=None, D=None, white=False):
+def X3(y, iters, batch_sz, num_dict_features=None, D=None, white=False, scale=False):
     ''' Dynamical systems neural network used for sparse approximation of an
         input vector.
 
@@ -106,11 +106,6 @@ def X3(y, iters, batch_sz, num_dict_features=None, D=None, white=False):
             iters: number of LCA iterations.
             batch_sz: number of samples to send to the network at each iteration.
             D: The dictionary to be used in the network.'''
-
-    if white is False:
-        scale_ = 0
-    else:
-        scale_ = 1
 
     cm.cuda_set_device(0)
     cm.cuda_set_device(1)
@@ -132,8 +127,9 @@ def X3(y, iters, batch_sz, num_dict_features=None, D=None, white=False):
 
         # choose random examples this iteration
         batch = y[:, np.random.randint(0, y.shape[1], batch_sz)]
-        batch = scale(batch, scale_)
-
+        
+        if scale:
+            batch = scale(batch, 1)
         if white:
             batch = whiten(batch)
 
